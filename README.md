@@ -30,9 +30,16 @@ This creates a redis cluster with some default values and creates a security gro
 
 ### Example
 ```
-  module "packer_role" {
-    source      = "github.com/skyscrapers/terraform-iam//kms_role"
-    kms_key_arn = "${aws_kms_key.kms_key.arn}"
-    environment = "staging"
-  }
+
+module "redis" {
+  source        = "github.com/skyscrapers/terraform-elasticache//redis"
+  name = "redis"
+  project     = "${var.project}"
+  environment = "${var.environment}"
+  node_type = "cache.t2.micro"
+  num_cache_nodes = "1"
+  subnets = "${module.vpc.private_db_subnets}"
+  allowed_sg = "${module.app_static.sg_id}"
+  vpc_id = "${module.vpc.vpc_id}"
+}
 ```
