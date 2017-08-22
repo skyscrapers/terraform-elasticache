@@ -35,3 +35,12 @@ variable "port" {
   description = "The redis port"
   default = "6379"
 }
+
+variable "automatic_failover_enabled" {
+  default = false
+}
+
+variable "availability_zones" {
+  description = "the list of AZs where you want your cluster to be deployed in"
+  type = "list"
+}
