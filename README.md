@@ -16,6 +16,8 @@ This creates a redis cluster with some default values and creates a security gro
  * [`parameter_group_name`]: String: The parameter group name default to default.redis3.2
  * [`engine_version`]: String: The redis engine version. default to 3.2.4
  * [`port`]: String: The redis port default to 6379
+ * [`automatic_failover_enabled`]: Boolean: Specifies whether a read-only replica will be automatically promoted to read/write primary if the existing primary fails. Defaults to false
+ * [`availability_zones`]: String: the list of AZs where you want your cluster to be deployed in (The number of azs must be <= num_cache_nodes)
 
 ### Output
  * [`role_arn`]: String: The Amazon Resource Name (ARN) specifying the role.
