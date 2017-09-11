@@ -23,8 +23,9 @@ variable "subnets" {
   type        = "list"
 }
 
-variable "allowed_sg" {
+variable "allowed_sgs" {
   description = "The security group that can access the redis cluster"
+  type        = "list"
 }
 
 variable "vpc_id" {

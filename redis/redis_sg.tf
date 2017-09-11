@@ -13,10 +13,11 @@ resource "aws_security_group" "sg_redis" {
 
 # Allow a security group to access the redis instance
 resource "aws_security_group_rule" "sg_app_to_redis" {
+  count                    = "${length(var.allowed_sgs)}"
   type                     = "ingress"
   security_group_id        = "${aws_security_group.sg_redis.id}"
   from_port                = "${var.port}"
   to_port                  = "${var.port}"
   protocol                 = "tcp"
-  source_security_group_id = "${var.allowed_sg}"
+  source_security_group_id = "${var.allowed_sgs[count.index]}"
 }

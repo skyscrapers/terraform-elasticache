@@ -11,7 +11,7 @@ This creates a redis cluster with some default values and creates a security gro
  * [`node_type`]: String(required): The instance size of the redis cluster
  * [`num_cache_nodes`]: String(required): The number of cache nodes
  * [`subnets`]: String(required): The subnets where the redis cluster is deployed
- * [`allowed_sg`]: String(required): The security group that can access the redis cluster
+ * [`allowed_sgs`]: List(required): The security groups that can access the redis cluster
  * [`vpc_id`]: String(required): The vpc where we will put the redis cluster
  * [`parameter_group_name`]: String: The parameter group name default to default.redis3.2
  * [`engine_version`]: String: The redis engine version. default to 3.2.4
@@ -41,7 +41,7 @@ module "redis" {
   node_type = "cache.t2.micro"
   num_cache_nodes = "1"
   subnets = "${module.vpc.private_db_subnets}"
-  allowed_sg = "${module.app_static.sg_id}"
+  allowed_sgs = ["${module.app_static.sg_id}"]
   vpc_id = "${module.vpc.vpc_id}"
 }
 ```
