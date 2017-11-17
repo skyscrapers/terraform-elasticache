@@ -20,15 +20,9 @@ This creates a redis cluster with some default values and creates a security gro
  * [`availability_zones`]: String: the list of AZs where you want your cluster to be deployed in (The number of azs must be <= num_cache_nodes)
 
 ### Output
- * [`role_arn`]: String: The Amazon Resource Name (ARN) specifying the role.
- * [`role_unique_id`]: String: The stable and unique string identifying the role.
- * [`profile_id`]: String: The instance profile's ID.
- * [`profile_arn`]: String: The ARN assigned by AWS to the instance profile.
- * [`profile_name`]: String: The instance profile's name.
- * [`policy_id`]: String: The role policy ID.
- * [`policy_name`]: String:  The name of the policy.
- * [`policy_policy`]: String: The policy document attached to the role.
- * [`policy_role`]: String: The role to which this policy applies.
+* [`redis_sg`]: String: The security group ID of the redis cluster.
+* [`configuration_endpoint_address`]: String: The address of the endpoint for the primary node in the replication group. If Redis, only present when cluster mode is disabled.
+* [`primary_endpoint_address`]: String: The address of the replication group configuration endpoint when cluster mode is enabled.
 
 ### Example
 ```
