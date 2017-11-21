@@ -18,6 +18,8 @@ This creates a redis cluster with some default values and creates a security gro
  * [`port`]: String: The redis port default to 6379
  * [`automatic_failover_enabled`]: Boolean: Specifies whether a read-only replica will be automatically promoted to read/write primary if the existing primary fails. Defaults to false
  * [`availability_zones`]: String: the list of AZs where you want your cluster to be deployed in (The number of azs must be <= num_cache_nodes)
+ * [`snapshot_window`]: String: The daily time range (in UTC) during which ElastiCache will begin taking a daily snapshot of your cache cluster. The minimum maintenance window is a 60 minute period. Example: 05:00-09:00
+ * [`snapshot_retention_limit`]: String: The number of days for which ElastiCache will retain automatic cache cluster snapshots before deleting them. For example, if you set SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off. Please note that setting a snapshot_retention_limit is not supported on cache.t1.micro or cache.t2.* cache nodes
 
 ### Output
 * [`redis_sg`]: String: The security group ID of the redis cluster.
