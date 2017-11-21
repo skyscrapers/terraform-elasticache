@@ -9,7 +9,7 @@ resource "aws_elasticache_replication_group" "redis" {
   parameter_group_name          = "${var.parameter_group_name}"
   security_group_ids            = ["${aws_security_group.sg_redis.id}"]
   subnet_group_name             = "${aws_elasticache_subnet_group.elasticache.id}"
-  availability_zones            = "${var.availability_zones}"
+  availability_zones            = ["${var.availability_zones}"]
   automatic_failover_enabled    = "${var.automatic_failover_enabled}"
   snapshot_window               = "${var.snapshot_window}"
   snapshot_retention_limit      = "${var.snapshot_retention_limit}"
