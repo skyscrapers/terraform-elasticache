@@ -13,6 +13,7 @@ resource "aws_elasticache_replication_group" "redis" {
   automatic_failover_enabled    = "${var.automatic_failover_enabled}"
   snapshot_window               = "${var.snapshot_window}"
   snapshot_retention_limit      = "${var.snapshot_retention_limit}"
+  snapshot_arns                 = "${var.snapshot_arns}"
 
   tags {
     Name        = "${var.project}-${var.environment}-${var.name}"
