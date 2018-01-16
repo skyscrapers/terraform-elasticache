@@ -24,7 +24,6 @@ This creates a redis cluster with some default values and creates a security gro
 
 ### Output
 * [`redis_sg`]: String: The security group ID of the redis cluster.
-* [`configuration_endpoint_address`]: String: The address of the endpoint for the primary node in the replication group. If Redis, only present when cluster mode is disabled.
 * [`primary_endpoint_address`]: String: The address of the replication group configuration endpoint when cluster mode is enabled.
 
 ### Example
