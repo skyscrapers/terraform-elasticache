@@ -72,6 +72,11 @@ variable "snapshot_arns" {
   default     = []
 }
 
+variable "at_rest_encryption_enabled" {
+  description = "(Optional) Whether to enable encryption at rest"
+  default     = false
+}
+
 variable "transit_encryption_enabled" {
   description = "(Optional) Whether to enable encryption in transit"
   default     = false
