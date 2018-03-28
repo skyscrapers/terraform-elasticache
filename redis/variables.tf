@@ -71,3 +71,13 @@ variable "snapshot_arns" {
   type        = "list"
   default     = []
 }
+
+variable "transit_encryption_enabled" {
+  description = "(Optional) Whether to enable encryption in transit"
+  default     = false
+}
+
+variable "auth_token" {
+  description = "(Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true`"
+  default     = ""
+}
