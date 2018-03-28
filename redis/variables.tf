@@ -39,7 +39,7 @@ variable "parameter_group_name" {
 
 variable "engine_version" {
   description = "The redis engine version"
-  default     = "3.2.4"
+  default     = "3.2.10"
 }
 
 variable "port" {
@@ -70,4 +70,19 @@ variable "snapshot_arns" {
   description = "(Optional) A single-element string list containing an Amazon Resource Name (ARN) of a Redis RDB snapshot file stored in Amazon S3. Example: arn:aws:s3:::my_bucket/snapshot1.rdb"
   type        = "list"
   default     = []
+}
+
+variable "at_rest_encryption_enabled" {
+  description = "(Optional) Whether to enable encryption at rest"
+  default     = true
+}
+
+variable "transit_encryption_enabled" {
+  description = "(Optional) Whether to enable encryption in transit"
+  default     = true
+}
+
+variable "auth_token" {
+  description = "(Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true`"
+  default     = ""
 }
