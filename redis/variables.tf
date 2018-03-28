@@ -39,7 +39,7 @@ variable "parameter_group_name" {
 
 variable "engine_version" {
   description = "The redis engine version"
-  default     = "3.2.4"
+  default     = "3.2.10"
 }
 
 variable "port" {
@@ -74,12 +74,12 @@ variable "snapshot_arns" {
 
 variable "at_rest_encryption_enabled" {
   description = "(Optional) Whether to enable encryption at rest"
-  default     = false
+  default     = true
 }
 
 variable "transit_encryption_enabled" {
   description = "(Optional) Whether to enable encryption in transit"
-  default     = false
+  default     = true
 }
 
 variable "auth_token" {
