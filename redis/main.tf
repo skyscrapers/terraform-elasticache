@@ -12,9 +12,9 @@ resource "aws_elasticache_replication_group" "redis" {
   subnet_group_name             = "${aws_elasticache_subnet_group.elasticache.id}"
   availability_zones            = ["${var.availability_zones}"]
   automatic_failover_enabled    = "${var.automatic_failover_enabled}"
-  snapshot_window               = "${var.snapshot_window}"
-  snapshot_retention_limit      = "${var.snapshot_retention_limit}"
-  snapshot_arns                 = "${var.snapshot_arns}"
+  # snapshot_window               = "${var.snapshot_window}"
+  # snapshot_retention_limit      = "${var.snapshot_retention_limit}"
+  # snapshot_arns                 = "${var.snapshot_arns}"
   at_rest_encryption_enabled    = "${var.at_rest_encryption_enabled}"
   transit_encryption_enabled    = "${var.transit_encryption_enabled}"
 
@@ -39,9 +39,9 @@ resource "aws_elasticache_replication_group" "redis_auth" {
   subnet_group_name             = "${aws_elasticache_subnet_group.elasticache.id}"
   availability_zones            = ["${var.availability_zones}"]
   automatic_failover_enabled    = "${var.automatic_failover_enabled}"
-  snapshot_window               = "${var.snapshot_window}"
-  snapshot_retention_limit      = "${var.snapshot_retention_limit}"
-  snapshot_arns                 = "${var.snapshot_arns}"
+  # snapshot_window               = "${var.snapshot_window}"
+  # snapshot_retention_limit      = "${var.snapshot_retention_limit}"
+  # snapshot_arns                 = "${var.snapshot_arns}"
   at_rest_encryption_enabled    = "${var.at_rest_encryption_enabled}"
   transit_encryption_enabled    = "${var.transit_encryption_enabled}"
   auth_token                    = "${var.auth_token}"
