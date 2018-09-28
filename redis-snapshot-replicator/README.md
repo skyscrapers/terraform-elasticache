@@ -1,6 +1,10 @@
 TODO manual
 
-https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access
+Elasticache needs to have account permissions to the S3 bucket, without this explicit access, it is unable to store backups in S3. In this link, there is more info : https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access
+
+These are the steps you have to take
+
+Open the S3 console and go to newly created bucket
 
 Choose Permissions.
 
