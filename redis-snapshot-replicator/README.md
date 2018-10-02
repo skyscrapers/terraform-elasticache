@@ -1,27 +1,45 @@
-TODO manual
+#README
 
-Elasticache needs to have account permissions to the S3 bucket, without this explicit access, it is unable to store backups in S3. In this link, there is more info : https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access
+## First steps before using the module
 
-These are the steps you have to take
+In order to use this module, the Elasticache accountid must me added to the root s3 bucket. (the source bucket from where the replication starts)
+This way, the copy_snapshot command of Elasticache can do it's job.
 
-Open the S3 console and go to newly created bucket
+### Needed steps
 
-Choose Permissions.
+- Open the S3 console and go to newly created bucket (the source bucket from where the replication starts)
+- Choose Permissions.
+- Choose Access Control List.
+- Under Access for other AWS accounts, choose + Add account.
+- For Europe add this account id : ` 540804c33a284a299d2547575ce1010f2312ef3da9b3a053c8bc45bf233e4353 `
 
-Choose Access Control List.
+   Set the permissions on the bucket by choosing Yes for:
+   List objects
+   Write objects
+   Read bucket permissions
+   Choose Save.
 
-Under Access for other AWS accounts, choose + Add account.
+### More info on the other account-id's
 
-All other regions:
+https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access
 
-540804c33a284a299d2547575ce1010f2312ef3da9b3a053c8bc45bf233e4353
-Set the permissions on the bucket by choosing Yes for:
+# Usage 
 
-List objects
+``` 
+provider "aws" {
+  alias  = "replica"
+  region = "eu-central-1"
+}
 
-Write objects
-
-Read bucket permissions
-
-Choose Save.
-
+module "redis-snapshot-replicator" {
+  source = ""
+  db_instances = ["db_name", "db_name"]
+  name = "prefix"
+  source_region = "eu-west-1"
+  replica_region = "eu-central-1"
+   providers = {
+    aws = "aws"
+    aws.replica = "aws.replica"
+  }
+}
+```

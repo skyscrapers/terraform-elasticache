@@ -1,5 +1,5 @@
 resource "aws_iam_role" "replication-role" {
-  name = "redis-replication-role"
+  name = "${var.name}-replication-role"
 
   assume_role_policy = <<POLICY
 {
@@ -19,7 +19,7 @@ POLICY
 }
 
 resource "aws_iam_policy" "replication-policy" {
-  name = "redis-replication-policy"
+  name = "${var.name}-replication-policy"
 
   policy = <<POLICY
 {
@@ -59,27 +59,26 @@ POLICY
 }
 
 resource "aws_iam_policy_attachment" "replication" {
-  name       = "redis-replication-attachment"
+  name       = "${var.name}-replication-attachment"
   roles      = ["${aws_iam_role.replication-role.name}"]
   policy_arn = "${aws_iam_policy.replication-policy.arn}"
 }
 
 resource "aws_s3_bucket" "destination" {
-  bucket   = "redis-snapshots-destination"
-  region   = "eu-central-1"
-  provider = "aws.eu-central-1"
+  bucket   = "${var.name}-snapshots-destination"
+  region   = "${var.replica_region}"
+  provider = "aws.replica"
 
   versioning {
     enabled = true
   }
-
 }
 
 resource "aws_s3_bucket" "bucket" {
   provider = "aws"
-  bucket   = "redis-snapshots"
+  bucket   = "${var.name}-snapshots"
   acl      = "private"
-  region   = "eu-west-1"
+  region   = "${var.source_region}"
 
   versioning {
     enabled = true
@@ -101,9 +100,8 @@ resource "aws_s3_bucket" "bucket" {
   }
 }
 
-
 resource "aws_iam_policy" "redis_lambda_create_snapshot" {
-  name = "redis_lambda_create_snapshot"
+  name = "${var.name}_lambda_create_snapshot"
 
   policy = <<EOF
 {
@@ -120,7 +118,7 @@ EOF
 }
 
 resource "aws_iam_role" "iam_for_lambda_redis" {
-  name = "default_lambda_for_redis"
+  name = "default_lambda_for_${var.name}"
 
   assume_role_policy = <<EOF
 {
@@ -143,9 +141,8 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_create_policy_to_role" 
   policy_arn = "${aws_iam_policy.redis_lambda_create_snapshot.arn}"
 }
 
-
 resource "aws_iam_policy" "redis_lambda_copy" {
-  name = "redis_lambda_copy"
+  name = "${var.name}_lambda_copy"
 
   policy = <<EOF
 {
@@ -173,6 +170,7 @@ resource "aws_iam_role_policy_attachment" "attach_redis_lambda_copy_policy_to_ro
   role       = "${aws_iam_role.iam_for_lambda_redis.name}"
   policy_arn = "${aws_iam_policy.redis_lambda_copy.arn}"
 }
+
 #Create zip file with all lambda code
 data "archive_file" "create_zip" {
   type        = "zip"
@@ -192,7 +190,7 @@ locals {
 #Creation of lambda function to create snapshots
 
 resource "aws_lambda_function" "redis_create_snapshot" {
-  function_name = "redis_create_snapshot"
+  function_name = "${var.name}_create_snapshot"
   role          = "${aws_iam_role.iam_for_lambda_redis.arn}"
   handler       = "create_snapshot.lambda_handler"
 
@@ -204,7 +202,7 @@ resource "aws_lambda_function" "redis_create_snapshot" {
 
   environment {
     variables = {
-      DB_INSTANCES  = "${join(",",var.db_instances)}"
+      DB_INSTANCES = "${join(",",var.db_instances)}"
     }
   }
 }
@@ -212,7 +210,7 @@ resource "aws_lambda_function" "redis_create_snapshot" {
 #Creation of lambda function to copy snapshots
 
 resource "aws_lambda_function" "redis_copy_snapshot" {
-  function_name = "redis_copy_snapshot"
+  function_name = "${var.name}_copy_snapshot"
   role          = "${aws_iam_role.iam_for_lambda_redis.arn}"
   handler       = "shipper.lambda_handler"
 
@@ -233,26 +231,43 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
 #Creation of cronjobs 
 #Job for triggering backups
 resource "aws_cloudwatch_event_rule" "redis_every_6_hours" {
-  name                = "redis_every_6_hours"
+  name                = "${var.name}_every_6_hours"
   description         = "Fires every 6 hours"
   schedule_expression = "rate(6 hours)"
 }
 
 resource "aws_cloudwatch_event_target" "activate_create_redis_backup_cron" {
   rule      = "${aws_cloudwatch_event_rule.redis_every_6_hours.name}"
-  target_id = "redis-snapshot-creation"
+  target_id = "${var.name}-snapshot-creation"
   arn       = "${aws_lambda_function.redis_create_snapshot.arn}"
 }
 
 #Job for triggering copy job
 resource "aws_cloudwatch_event_rule" "redis_every_7_hours" {
-  name                = "redis_every_7_hours"
+  name                = "${var.name}_every_7_hours"
   description         = "Fires every 7 hours"
   schedule_expression = "rate(7 hours)"
 }
 
 resource "aws_cloudwatch_event_target" "activate_copy_redis_snapshot_cron" {
   rule      = "${aws_cloudwatch_event_rule.redis_every_7_hours.name}"
-  target_id = "redis-snapshot-copy"
+  target_id = "${var.name}-snapshot-copy"
   arn       = "${aws_lambda_function.redis_copy_snapshot.arn}"
+}
+
+#Allow cloudwatch to execute lambda
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_copy" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.redis_copy_snapshot.arn}"
+  principal     = "events.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_event_rule.redis_every_7_hours.arn}"
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_create" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.redis_create_snapshot.arn}"
+  principal     = "events.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_event_rule.redis_every_6_hours.arn}"
 }
