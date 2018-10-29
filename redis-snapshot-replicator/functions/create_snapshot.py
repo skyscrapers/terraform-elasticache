@@ -13,5 +13,3 @@ def lambda_handler(event, context):
         now = datetime.datetime.now()
         db_snapshot_name = now.strftime('%Y-%m-%d-%H-%M')
         response = source.create_snapshot(CacheClusterId=instance,SnapshotName='snapshot-'+db_snapshot_name)
-        
-
