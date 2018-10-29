@@ -10,11 +10,3 @@ variable "db_instances" {
 variable "name" {
   type = "string"
 }
-
-variable "replica_region" {
-  type = "string"
-}
-
-variable "source_region" {
-  type = "string"
-}

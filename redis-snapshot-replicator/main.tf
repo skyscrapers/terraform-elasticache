@@ -18,55 +18,57 @@ resource "aws_iam_role" "replication-role" {
 POLICY
 }
 
+data "aws_iam_policy_document" "replication_policy" {
+  statement {
+    sid = "1"
+
+    actions = [
+      "s3:GetReplicationConfiguration",
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.bucket.arn}",
+    ]
+  }
+  statement {
+    sid = "2"
+
+    actions = [
+      "s3:GetObjectVersion",
+      "s3:GetObjectVersionAcl",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.bucket.arn}/*",
+    ]
+  }
+  statement {
+    sid = "3"
+
+    actions = [
+      "s3:ReplicateObject",
+      "s3:ReplicateDelete",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.destination.arn}/*",
+    ]
+  }
+}
+
 resource "aws_iam_policy" "replication-policy" {
   name = "${var.name}-replication-policy"
-
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "s3:GetReplicationConfiguration",
-        "s3:ListBucket"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${aws_s3_bucket.bucket.arn}"
-      ]
-    },
-    {
-      "Action": [
-        "s3:GetObjectVersion",
-        "s3:GetObjectVersionAcl"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${aws_s3_bucket.bucket.arn}/*"
-      ]
-    },
-    {
-      "Action": [
-        "s3:ReplicateObject",
-        "s3:ReplicateDelete"
-      ],
-      "Effect": "Allow",
-      "Resource": "${aws_s3_bucket.destination.arn}/*"
-    }
-  ]
-}
-POLICY
+  policy = "${data.aws_iam_policy_document.replication_policy.json}"
 }
 
-resource "aws_iam_policy_attachment" "replication" {
-  name       = "${var.name}-replication-attachment"
-  roles      = ["${aws_iam_role.replication-role.name}"]
+resource "aws_iam_role_policy_attachment" "replication-replication-attachement" {
+  role       = "${aws_iam_role.replication-role.name}"
   policy_arn = "${aws_iam_policy.replication-policy.arn}"
-}
+} 
 
 resource "aws_s3_bucket" "destination" {
   bucket   = "${var.name}-snapshots-destination"
-  region   = "${var.replica_region}"
   provider = "aws.replica"
 
   versioning {
@@ -77,8 +79,6 @@ resource "aws_s3_bucket" "destination" {
 resource "aws_s3_bucket" "bucket" {
   provider = "aws"
   bucket   = "${var.name}-snapshots"
-  acl      = "private"
-  region   = "${var.source_region}"
 
   versioning {
     enabled = true
@@ -271,3 +271,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_create" {
   principal     = "events.amazonaws.com"
   source_arn    = "${aws_cloudwatch_event_rule.redis_every_6_hours.arn}"
 }
+
+
+
+
