@@ -14,5 +14,5 @@ variable "name" {
 variable "enable" {
   default = false
 }
-variable "environment" {
-}
+
+variable "environment" {}
