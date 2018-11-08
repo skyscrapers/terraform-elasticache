@@ -1,4 +1,5 @@
 resource "aws_iam_role" "replication_role" {
+  count                   = "${var.enable ? 1 : 0}"
   name = "${var.name}-replication-role-${var.environment}"
 
   assume_role_policy = <<POLICY
@@ -19,6 +20,7 @@ POLICY
 }
 
 data "aws_iam_policy_document" "replication_policy" {
+  count                   = "${var.enable ? 1 : 0}"
   statement {
     sid = "1"
 
@@ -58,16 +60,19 @@ data "aws_iam_policy_document" "replication_policy" {
 }
 
 resource "aws_iam_policy" "replication_policy" {
+  count                   = "${var.enable ? 1 : 0}"
   name = "${var.name}-replication-policy-${var.environment}"
   policy = "${data.aws_iam_policy_document.replication_policy.json}"
 }
 
 resource "aws_iam_role_policy_attachment" "replication_replication_attachement" {
+  count                   = "${var.enable ? 1 : 0}"
   role       = "${aws_iam_role.replication_role.name}"
   policy_arn = "${aws_iam_policy.replication_policy.arn}"
 } 
 
 resource "aws_s3_bucket" "destination" {
+  count                   = "${var.enable ? 1 : 0}"
   bucket   = "${var.name}-snapshots-destination-${var.environment}"
   provider = "aws.replica"
 
@@ -77,6 +82,7 @@ resource "aws_s3_bucket" "destination" {
 }
 
 resource "aws_s3_bucket" "bucket" {
+  count                   = "${var.enable ? 1 : 0}"
   provider = "aws"
   bucket   = "${var.name}-snapshots-${var.environment}"
 
@@ -101,6 +107,7 @@ resource "aws_s3_bucket" "bucket" {
 }
 
 resource "aws_iam_policy" "redis_lambda_create_snapshot" {
+  count                   = "${var.enable ? 1 : 0}"
   name = "${var.name}-lambda-create-snapshot-${var.environment}"
 
   policy = <<EOF
@@ -118,6 +125,7 @@ EOF
 }
 
 resource "aws_iam_role" "iam_for_lambda_redis" {
+  count                   = "${var.enable ? 1 : 0}"
   name = "default-lambda-for-${var.name}-${var.environment}"
 
   assume_role_policy = <<EOF
@@ -137,11 +145,13 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "attach_lambda_create_policy_to_role" {
+  count                   = "${var.enable ? 1 : 0}"
   role       = "${aws_iam_role.iam_for_lambda_redis.name}"
   policy_arn = "${aws_iam_policy.redis_lambda_create_snapshot.arn}"
 }
 
 resource "aws_iam_policy" "redis_lambda_copy" {
+  count                   = "${var.enable ? 1 : 0}"
   name = "${var.name}-lambda-copy-${var.environment}"
 
   policy = <<EOF
@@ -167,11 +177,13 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "attach_redis_lambda_copy_policy_to_role" {
+  count                   = "${var.enable ? 1 : 0}"
   role       = "${aws_iam_role.iam_for_lambda_redis.name}"
   policy_arn = "${aws_iam_policy.redis_lambda_copy.arn}"
 }
 
 resource "aws_iam_policy" "redis_lambda_remove" {
+  count                   = "${var.enable ? 1 : 0}"
   name = "${var.name}-lambda-remove-${var.environment}"
 
   policy = <<EOF
@@ -190,6 +202,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "attach_redis_lambda_remove_policy_to_role" {
+  count                   = "${var.enable ? 1 : 0}"
   role       = "${aws_iam_role.iam_for_lambda_redis.name}"
   policy_arn = "${aws_iam_policy.redis_lambda_remove.arn}"
 }
@@ -203,7 +216,7 @@ data "archive_file" "create_zip" {
 
 locals {
   # Solution from this comment to open issue on non-relative paths  # https://github.com/hashicorp/terraform/issues/8204#issuecomment-332239294
-
+  count                   = "${var.enable ? 1 : 0}"
   filename = "${substr(data.archive_file.create_zip.output_path, length(path.cwd) + 1, -1)}"
 
   // +1 for removing the "/"
@@ -212,6 +225,7 @@ locals {
 #Creation of lambda function to create snapshots
 
 resource "aws_lambda_function" "redis_create_snapshot" {
+  count                   = "${var.enable ? 1 : 0}"
   function_name = "${var.name}-create-snapshot-${var.environment}"
   role          = "${aws_iam_role.iam_for_lambda_redis.arn}"
   handler       = "create_snapshot.lambda_handler"
@@ -232,6 +246,7 @@ resource "aws_lambda_function" "redis_create_snapshot" {
 #Creation of lambda function to copy snapshots
 
 resource "aws_lambda_function" "redis_copy_snapshot" {
+  count                   = "${var.enable ? 1 : 0}"
   function_name = "${var.name}-copy-snapshot-${var.environment}"
   role          = "${aws_iam_role.iam_for_lambda_redis.arn}"
   handler       = "shipper.lambda_handler"
@@ -253,6 +268,7 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
 #Creation of lambda function to remove source snapshots
 
 resource "aws_lambda_function" "redis_remove_snapshot" {
+  count                   = "${var.enable ? 1 : 0}"
   function_name = "${var.name}-remove-snapshot-${var.environment}"
   role          = "${aws_iam_role.iam_for_lambda_redis.arn}"
   handler       = "shipper.lambda_handler"
@@ -273,12 +289,14 @@ resource "aws_lambda_function" "redis_remove_snapshot" {
 #Creation of cronjobs 
 #Job for triggering backups
 resource "aws_cloudwatch_event_rule" "redis_every_6_hours" {
+  count                   = "${var.enable ? 1 : 0}"
   name                = "${var.name}-every-6_hours-${var.environment}"
   description         = "Fires every 6 hours"
   schedule_expression = "rate(6 hours)"
 }
 
 resource "aws_cloudwatch_event_target" "activate_create_redis_backup_cron" {
+  count                   = "${var.enable ? 1 : 0}"
   rule      = "${aws_cloudwatch_event_rule.redis_every_6_hours.name}"
   target_id = "${var.name}-snapshot-creation-${var.environment}"
   arn       = "${aws_lambda_function.redis_create_snapshot.arn}"
@@ -286,23 +304,27 @@ resource "aws_cloudwatch_event_target" "activate_create_redis_backup_cron" {
 
 #Job for triggering copy job
 resource "aws_cloudwatch_event_rule" "redis_every_7_hours" {
+  count                   = "${var.enable ? 1 : 0}"
   name                = "${var.name}-every-7-hours-${var.environment}"
   description         = "Fires every 7 hours"
   schedule_expression = "rate(7 hours)"
 }
 
 resource "aws_cloudwatch_event_target" "activate_copy_redis_snapshot_cron" {
+  count                   = "${var.enable ? 1 : 0}"
   rule      = "${aws_cloudwatch_event_rule.redis_every_7_hours.name}"
   target_id = "${var.name}-snapshot-copy-${var.environment}"
   arn       = "${aws_lambda_function.redis_copy_snapshot.arn}"
 }
 resource "aws_cloudwatch_event_rule" "redis_every_8_hours" {
+  count                   = "${var.enable ? 1 : 0}"
   name                = "${var.name}-every-8-hours-${var.environment}"
   description         = "Fires every 8 hours"
   schedule_expression = "rate(8 hours)"
 }
 
 resource "aws_cloudwatch_event_target" "activate_remove_redis_snapshot_cron" {
+  count                   = "${var.enable ? 1 : 0}"
   rule      = "${aws_cloudwatch_event_rule.redis_every_8_hours.name}"
   target_id = "${var.name}-snapshot-remove-${var.environment}"
   arn       = "${aws_lambda_function.redis_remove_snapshot.arn}"
@@ -310,6 +332,7 @@ resource "aws_cloudwatch_event_target" "activate_remove_redis_snapshot_cron" {
 
 #Allow cloudwatch to execute lambda
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_copy" {
+  count                   = "${var.enable ? 1 : 0}"
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.redis_copy_snapshot.arn}"
@@ -318,6 +341,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_copy" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_create" {
+  count                   = "${var.enable ? 1 : 0}"
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.redis_create_snapshot.arn}"
@@ -326,6 +350,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_create" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_remove" {
+  count                   = "${var.enable ? 1 : 0}"
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.redis_remove_snapshot.arn}"
