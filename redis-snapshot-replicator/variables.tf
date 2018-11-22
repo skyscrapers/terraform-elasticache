@@ -10,3 +10,9 @@ variable "db_instances" {
 variable "name" {
   type = "string"
 }
+
+variable "enable" {
+  default = false
+}
+
+variable "environment" {}
