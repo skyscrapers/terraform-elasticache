@@ -98,7 +98,7 @@ variable "transit_encryption_enabled" {
 
 variable "auth_token" {
   description = "(Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true`"
-  default     = ""
+  default     = null
   type        = string
 }
 
