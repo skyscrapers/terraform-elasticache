@@ -1,5 +1,6 @@
 variable "rentention" {
   default = 30
+  type    = number
 }
 
 variable "db_instances" {
@@ -13,8 +14,10 @@ variable "name" {
 
 variable "enable" {
   default = false
+  type    = bool
 }
 
 variable "environment" {
+  type    = string
 }
 
