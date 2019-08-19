@@ -1,18 +1,23 @@
 variable "rentention" {
   default = 30
+  type    = number
 }
 
 variable "db_instances" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
 variable "name" {
-  type = "string"
+  type = string
 }
 
 variable "enable" {
   default = false
+  type    = bool
 }
 
-variable "environment" {}
+variable "environment" {
+  type    = string
+}
+
