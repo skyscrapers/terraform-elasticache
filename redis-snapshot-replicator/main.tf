@@ -231,8 +231,8 @@ resource "aws_lambda_function" "redis_create_snapshot" {
   role          = aws_iam_role.iam_for_lambda_redis[0].arn
   handler       = "create_snapshot.lambda_handler"
 
-  filename         = "${path.module}/shipper.zip"
-  source_code_hash = filebase64sha256("${path.module}/shipper.zip")
+  filename         = data.archive_file.create_zip.output_path
+  source_code_hash = filebase64sha256(data.archive_file.create_zip.output_base64sha256)
 
   runtime = "python2.7"
   timeout = "120"
