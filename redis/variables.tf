@@ -20,12 +20,12 @@ variable "num_cache_nodes" {
 
 variable "subnets" {
   description = "The subnets where the redis cluster is deployed"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "allowed_sgs" {
   description = "The security group that can access the redis cluster"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "vpc_id" {
@@ -53,7 +53,7 @@ variable "automatic_failover_enabled" {
 
 variable "availability_zones" {
   description = "the list of AZs where you want your cluster to be deployed in"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "snapshot_window" {
@@ -68,7 +68,7 @@ variable "snapshot_retention_limit" {
 
 variable "snapshot_arns" {
   description = "(Optional) A single-element string list containing an Amazon Resource Name (ARN) of a Redis RDB snapshot file stored in Amazon S3. Example: arn:aws:s3:::my_bucket/snapshot1.rdb"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -86,3 +86,4 @@ variable "auth_token" {
   description = "(Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true`"
   default     = ""
 }
+
