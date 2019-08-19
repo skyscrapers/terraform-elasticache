@@ -222,16 +222,6 @@ data "archive_file" "create_zip" {
   source_dir  = "${path.module}/functions/"
 }
 
-locals {
-  # Solution from this comment to open issue on non-relative paths  # https://github.com/hashicorp/terraform/issues/8204#issuecomment-332239294
-  count = var.enable ? 1 : 0
-  filename = substr(
-    data.archive_file.create_zip.output_path,
-    length(path.cwd) + 1,
-    -1,
-  )
-  // +1 for removing the "/"
-}
 
 #Creation of lambda function to create snapshots
 
@@ -241,8 +231,8 @@ resource "aws_lambda_function" "redis_create_snapshot" {
   role          = aws_iam_role.iam_for_lambda_redis[0].arn
   handler       = "create_snapshot.lambda_handler"
 
-  filename         = local.filename
-  source_code_hash = filebase64sha256(local.filename)
+  filename         = "${path.module}/shipper.zip"
+  source_code_hash = filebase64sha256("${path.module}/shipper.zip")
 
   runtime = "python2.7"
   timeout = "120"
