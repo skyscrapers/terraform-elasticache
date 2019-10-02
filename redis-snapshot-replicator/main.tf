@@ -83,6 +83,17 @@ resource "aws_s3_bucket" "destination" {
   versioning {
     enabled = true
   }
+
+  lifecycle_rule {
+    id      = "expire"
+    prefix  = "/"
+    enabled = true
+
+    expiration {
+      days = var.backup_retention_days
+    }
+  }
+
 }
 
 resource "aws_s3_bucket" "bucket" {
@@ -252,8 +263,8 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
   role          = aws_iam_role.iam_for_lambda_redis[0].arn
   handler       = "shipper.lambda_handler"
 
-  filename         = local.filename
-  source_code_hash = filebase64sha256(local.filename)
+  filename         = "${path.module}/shipper.zip"
+  source_code_hash = filebase64sha256("${path.module}/shipper.zip")
 
   runtime = "python2.7"
   timeout = "120"
@@ -266,6 +277,23 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
   }
 }
 
+resource "aws_sns_topic_subscription" "lambda_subscription" {
+  count         = var.enable ? 1 : 0
+  topic_arn     = var.redis_sns_topic_arn
+  protocol      = "lambda"
+  endpoint      = aws_lambda_function.redis_copy_snapshot[0].arn
+  filter_policy = jsonencode(map("Message", map("prefix", "Snapshot succeeded")))
+}
+
+resource "aws_lambda_permission" "sns_topic_copy_snapshot" {
+  count         = var.enable ? 1 : 0
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.redis_copy_snapshot[0].arn
+  principal     = "sns.amazonaws.com"
+  source_arn    = var.redis_sns_topic_arn
+}
+
 #Creation of lambda function to remove source snapshots
 
 resource "aws_lambda_function" "redis_remove_snapshot" {
@@ -274,8 +302,8 @@ resource "aws_lambda_function" "redis_remove_snapshot" {
   role          = aws_iam_role.iam_for_lambda_redis[0].arn
   handler       = "remove_snapshot.lambda_handler"
 
-  filename         = local.filename
-  source_code_hash = filebase64sha256(local.filename)
+  filename         = "${path.module}/shipper.zip"
+  source_code_hash = filebase64sha256("${path.module}/shipper.zip")
 
   runtime = "python2.7"
   timeout = "120"
@@ -283,64 +311,40 @@ resource "aws_lambda_function" "redis_remove_snapshot" {
   environment {
     variables = {
       DB_INSTANCES = join(",", var.db_instances)
+      RETENTION    = var.backup_retention_days
     }
   }
 }
 
-#Creation of cronjobs 
-#Job for triggering backups
-resource "aws_cloudwatch_event_rule" "redis_every_6_hours" {
+resource "aws_cloudwatch_event_rule" "invoke_redis_snapshot_lambda" {
   count               = var.enable ? 1 : 0
-  name                = "${var.name}-every-6_hours-${var.environment}"
-  description         = "Fires every 6 hours"
-  schedule_expression = "rate(6 hours)"
+  name                = "${var.name}-invoke-reds-snapshot-lambda-${var.environment}"
+  description         = "Invokes lambda function to create custom redis snapshot"
+  schedule_expression = "rate(${var.custom_snapshot_rate} hours)"
 }
 
-resource "aws_cloudwatch_event_target" "activate_create_redis_backup_cron" {
+resource "aws_cloudwatch_event_target" "invoke_redis_snapshot_lambda" {
   count     = var.enable ? 1 : 0
-  rule      = aws_cloudwatch_event_rule.redis_every_6_hours[0].name
+  rule      = aws_cloudwatch_event_rule.invoke_redis_snapshot_lambda[0].name
   target_id = "${var.name}-snapshot-creation-${var.environment}"
   arn       = aws_lambda_function.redis_create_snapshot[0].arn
 }
 
-#Job for triggering copy job
-resource "aws_cloudwatch_event_rule" "redis_every_7_hours" {
+
+resource "aws_cloudwatch_event_rule" "invoke_redis_cleanup_lambda" {
   count               = var.enable ? 1 : 0
-  name                = "${var.name}-every-7-hours-${var.environment}"
-  description         = "Fires every 7 hours"
-  schedule_expression = "rate(7 hours)"
+  name                = "${var.name}-invoke-redis-cleanup-lambda-${var.environment}"
+  description         = "Fires every 24 hours to cleanup old custom redis snapshots"
+  schedule_expression = "rate(24 hours)"
 }
 
-resource "aws_cloudwatch_event_target" "activate_copy_redis_snapshot_cron" {
+resource "aws_cloudwatch_event_target" "invoke_redis_cleanup_lambda" {
   count     = var.enable ? 1 : 0
-  rule      = aws_cloudwatch_event_rule.redis_every_7_hours[0].name
-  target_id = "${var.name}-snapshot-copy-${var.environment}"
-  arn       = aws_lambda_function.redis_copy_snapshot[0].arn
-}
-
-resource "aws_cloudwatch_event_rule" "redis_every_8_hours" {
-  count               = var.enable ? 1 : 0
-  name                = "${var.name}-every-8-hours-${var.environment}"
-  description         = "Fires every 8 hours"
-  schedule_expression = "rate(8 hours)"
-}
-
-resource "aws_cloudwatch_event_target" "activate_remove_redis_snapshot_cron" {
-  count     = var.enable ? 1 : 0
-  rule      = aws_cloudwatch_event_rule.redis_every_8_hours[0].name
+  rule      = aws_cloudwatch_event_rule.invoke_redis_snapshot_lambda[0].name
   target_id = "${var.name}-snapshot-remove-${var.environment}"
   arn       = aws_lambda_function.redis_remove_snapshot[0].arn
 }
 
-#Allow cloudwatch to execute lambda
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_copy" {
-  count         = var.enable ? 1 : 0
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.redis_copy_snapshot[0].arn
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.redis_every_7_hours[0].arn
-}
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_create" {
   count         = var.enable ? 1 : 0
@@ -348,7 +352,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_create" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.redis_create_snapshot[0].arn
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.redis_every_6_hours[0].arn
+  source_arn    = aws_cloudwatch_event_rule.invoke_redis_snapshot_lambda[0].arn
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_remove" {
@@ -357,6 +361,5 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_remove" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.redis_remove_snapshot[0].arn
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.redis_every_8_hours[0].arn
+  source_arn    = aws_cloudwatch_event_rule.invoke_redis_copy_lambda[0].arn
 }
-
