@@ -27,6 +27,12 @@ variable "custom_snapshot_rate" {
   description = "Number of hours to take custom RDS snapshots every each"
 }
 
+variable "sns_topic_arn" {
+  type        = string
+  description = "ARN of SNS topic to use for monitoring of the snapshot creation, copy, and cleanup process"
+}
+
+
 variable "redis_sns_topic_arn" {
   type        = string
   description = "ARN of SNS topic the ElastiCache cluster sends notification to"

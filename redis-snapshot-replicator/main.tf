@@ -1,3 +1,7 @@
+provider "aws" {
+  alias               = "replica"
+}
+
 resource "aws_iam_role" "replication_role" {
   count = var.enable ? 1 : 0
   name  = "${var.name}-replication-role-${var.environment}"
@@ -243,7 +247,7 @@ resource "aws_lambda_function" "redis_create_snapshot" {
   handler       = "create_snapshot.lambda_handler"
 
   filename         = data.archive_file.create_zip.output_path
-  source_code_hash = filebase64sha256(data.archive_file.create_zip.output_base64sha256)
+  source_code_hash = data.archive_file.create_zip.output_base64sha256
 
   runtime = "python2.7"
   timeout = "120"
@@ -263,8 +267,8 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
   role          = aws_iam_role.iam_for_lambda_redis[0].arn
   handler       = "shipper.lambda_handler"
 
-  filename         = "${path.module}/shipper.zip"
-  source_code_hash = filebase64sha256("${path.module}/shipper.zip")
+  filename         = data.archive_file.create_zip.output_path
+  source_code_hash = data.archive_file.create_zip.output_base64sha256
 
   runtime = "python2.7"
   timeout = "120"
@@ -302,8 +306,8 @@ resource "aws_lambda_function" "redis_remove_snapshot" {
   role          = aws_iam_role.iam_for_lambda_redis[0].arn
   handler       = "remove_snapshot.lambda_handler"
 
-  filename         = "${path.module}/shipper.zip"
-  source_code_hash = filebase64sha256("${path.module}/shipper.zip")
+  filename         = data.archive_file.create_zip.output_path
+  source_code_hash = data.archive_file.create_zip.output_base64sha256
 
   runtime = "python2.7"
   timeout = "120"
@@ -361,5 +365,5 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_remove" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.redis_remove_snapshot[0].arn
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.invoke_redis_copy_lambda[0].arn
+  source_arn    = aws_cloudwatch_event_rule.invoke_redis_cleanup_lambda[0].arn
 }
