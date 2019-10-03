@@ -102,3 +102,9 @@ variable "auth_token" {
   type        = string
 }
 
+
+variable "notification_topic_arn" {
+  description = "(Optional) ARN of an SNS topic to send ElastiCache notifications"
+  default     = null
+  type        = string
+}

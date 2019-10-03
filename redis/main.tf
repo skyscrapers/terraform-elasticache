@@ -17,6 +17,7 @@ resource "aws_elasticache_replication_group" "redis" {
   at_rest_encryption_enabled    = var.at_rest_encryption_enabled
   transit_encryption_enabled    = var.transit_encryption_enabled
   auth_token                    = var.auth_token
+  notification_topic_arn        = var.notification_topic_arn 
 
   tags = {
     Name        = "${var.project}-${var.environment}-${var.name}"

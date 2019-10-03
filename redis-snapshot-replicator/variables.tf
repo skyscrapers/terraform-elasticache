@@ -18,6 +18,28 @@ variable "enable" {
 }
 
 variable "environment" {
-  type    = string
+  type = string
 }
 
+variable "custom_snapshot_rate" {
+  type        = number
+  default     = 6
+  description = "Number of hours to take custom RDS snapshots every each"
+}
+
+variable "sns_topic_arn" {
+  type        = string
+  description = "ARN of SNS topic to use for monitoring of the snapshot creation, copy, and cleanup process"
+}
+
+
+variable "redis_sns_topic_arn" {
+  type        = string
+  description = "ARN of SNS topic the ElastiCache cluster sends notification to"
+}
+
+
+variable "backup_retention_days" {
+  type    = number
+  default = 30
+}

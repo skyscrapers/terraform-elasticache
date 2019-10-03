@@ -24,6 +24,7 @@ This creates a redis cluster with some default values and creates a security gro
  * [`at_rest_encryption_enabled`]: Bool(Optional, true) Whether to enable encryption at rest
  * [`transit_encryption_enabled`]: Bool(Optional, true) Whether to enable encryption in transit
  * [`auth_token`]: String(Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true`
+ * [`notification_topic_arn`]: String(Optional) (Optional) ARN of an SNS topic to send ElastiCache notifications
 
 ### Output
 * [`redis_sg`]: String: The security group ID of the redis cluster.

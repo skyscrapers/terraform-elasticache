@@ -4,27 +4,26 @@ import datetime
 import re
 import os
 
-iam = boto3.client('iam')  
 instances = os.environ['DB_INSTANCES']  
+duration = os.environ['RETENTION']
 
 print('Loading function')
-
-def byTimestamp(snap):  
-    if 'SnapshotCreateTime' in snap:
-        return datetime.datetime.isoformat(snap['SnapshotCreateTime'])
-    else:
-        return datetime.datetime.isoformat(datetime.datetime.now())
 
 def lambda_handler(event, context): 
 
     source = boto3.client('elasticache')
 
     for instance in instances.split(','):
-        source_snaps = source.describe_snapshots(CacheClusterId=instance)['Snapshots']
-        source_snap = sorted(source_snaps, key=byTimestamp, reverse=False)[0]['SnapshotName']
-        
-        try:
-            response = source.delete_snapshot(SnapshotName=source_snap)
-            print('Will remove %s from the source backups' % (source_snap))
-        except botocore.exceptions.ClientError as e:
-            raise Exception("Could not issue remove command: %s" % e)
+        paginator = source.get_paginator('describe_snapshots')
+        page_iterator = paginator.paginate(CacheClusterId=instance)
+        snapshots = []
+        for page in page_iterator:
+            snapshots.extend(page['Snapshots'])
+        for snapshot in snapshots:
+            create_ts = snapshot['SnapshotCreateTime'].replace(tzinfo=None)
+            if create_ts < datetime.datetime.now() - datetime.timedelta(days=int(duration)):        
+                try:
+                    response = source.delete_snapshot(SnapshotName=snapshot['SnapshotName'])
+                    print('Will remove %s from the source backups' % (source_snap))
+                except botocore.exceptions.ClientError as e:
+                    raise Exception("Could not issue remove command: %s" % e)
