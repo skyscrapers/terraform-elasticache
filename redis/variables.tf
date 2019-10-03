@@ -86,3 +86,5 @@ variable "auth_token" {
   description = "(Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true`"
   default     = ""
 }
+
+variable "notification_topic_arn" {}
