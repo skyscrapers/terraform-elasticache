@@ -24,6 +24,27 @@ resource "aws_cloudwatch_metric_alarm" "lambda_redis_snapshot_copy_errors" {
   }
 }
 
+
+resource "aws_cloudwatch_metric_alarm" "lambda_redis_filter_events" {
+  count               = var.enable ? 1 : 0
+  alarm_name          = "redis_lambda_filter_events_${var.environment}_errors"
+  alarm_description   = "The errors on redis_snapshot_copy are higher than 1"
+  namespace           = "AWS/Lambda"
+  metric_name         = "Errors"
+  statistic           = "Sum"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 1
+  evaluation_periods  = 1
+  period              = local.cw_alarm_custom_period
+
+  alarm_actions = [var.sns_topic_arn]
+  ok_actions    = [var.sns_topic_arn]
+
+  dimensions = {
+    FunctionName = aws_lambda_function.filter_events[0].function_name
+  }
+}
+
 resource "aws_cloudwatch_metric_alarm" "lambda_redis_snapshot_create_errors" {
   count               = var.enable ? 1 : 0
   alarm_name          = "redis_snapshot_create_invocation_${var.environment}_errors"
@@ -35,8 +56,8 @@ resource "aws_cloudwatch_metric_alarm" "lambda_redis_snapshot_create_errors" {
   threshold           = 1
   evaluation_periods  = 1
   period              = local.cw_alarm_custom_period
-  alarm_actions = [var.sns_topic_arn]
-  ok_actions    = [var.sns_topic_arn]
+  alarm_actions       = [var.sns_topic_arn]
+  ok_actions          = [var.sns_topic_arn]
 
   dimensions = {
     FunctionName = aws_lambda_function.redis_create_snapshot[0].function_name

@@ -1,5 +1,5 @@
 provider "aws" {
-  alias               = "replica"
+  alias = "replica"
 }
 
 resource "aws_iam_role" "replication_role" {
@@ -231,10 +231,9 @@ resource "aws_iam_role_policy_attachment" "filter_events_lambda" {
   policy_arn = aws_iam_policy.filter_events_lambda[0].arn
 }
 
-resource "aws_iam_policy_attachment" "lambda_exec_role" {
+resource "aws_iam_rule_policy_attachment" "lambda_exec_role" {
   count      = var.enable ? 1 : 0
-  name       = "${var.name}-lambda-exec-${var.environment}"
-  roles      = aws_iam_role.iam_for_lambda_redis[0].name
+  role       = aws_iam_role.iam_for_lambda_redis[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -347,17 +346,17 @@ resource "aws_lambda_function" "filter_events" {
 
   environment {
     variables = {
-      TOPIC_ARN  = var.redis_sns_topic_arn
+      TOPIC_ARN = var.redis_sns_topic_arn
     }
   }
 }
 
 
 resource "aws_sns_topic_subscription" "filter_events_subscription" {
-  count         = var.enable ? 1 : 0
-  topic_arn     = var.redis_sns_topic_arn
-  protocol      = "lambda"
-  endpoint      = aws_lambda_function.filter_events[0].arn
+  count     = var.enable ? 1 : 0
+  topic_arn = var.redis_sns_topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.filter_events[0].arn
 }
 
 resource "aws_lambda_permission" "sns_topic_filter_events" {
