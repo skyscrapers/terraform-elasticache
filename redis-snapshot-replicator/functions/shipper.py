@@ -1,19 +1,10 @@
 import boto3
 import botocore
-import datetime
-import re
 import os
 
-instances = os.environ['DB_INSTANCES']  
 target_bucket = os.environ['TARGET_BUCKET'] 
 
 print('Loading function')
-
-def byTimestamp(snap):  
-    if 'SnapshotCreateTime' in snap:
-        return datetime.datetime.isoformat(snap['SnapshotCreateTime'])
-    else:
-        return datetime.datetime.isoformat(datetime.datetime.now())
 
 def lambda_handler(event, context): 
 
