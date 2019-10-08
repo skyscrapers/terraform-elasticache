@@ -4,7 +4,6 @@ import datetime
 import re
 import os
 
-iam = boto3.client('iam')  
 instances = os.environ['DB_INSTANCES']  
 target_bucket = os.environ['TARGET_BUCKET'] 
 
@@ -24,9 +23,7 @@ def lambda_handler(event, context):
 
     if "Snapshot succeeded" in message
 
-        for instance in instances.split(','):
-            source_snaps = source.describe_snapshots(CacheClusterId=instance)['Snapshots']
-            source_snap = sorted(source_snaps, key=byTimestamp, reverse=True)[0]['SnapshotName']
+        source_snap = ''.join([i for i in message.split('\'') if 'snapshot-' in i])
         
         try:
             response = source.copy_snapshot(SourceSnapshotName=source_snap,TargetSnapshotName=source_snap,TargetBucket=target_bucket)
