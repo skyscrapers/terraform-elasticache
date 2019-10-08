@@ -30,6 +30,6 @@ def lambda_handler(event, context):
         
         try:
             response = source.copy_snapshot(SourceSnapshotName=source_snap,TargetSnapshotName=source_snap,TargetBucket=target_bucket)
-                print('Will Copy %s to bucket %s' % (source_snap, target_bucket))
-            except botocore.exceptions.ClientError as e:
-                raise Exception("Could not issue copy command: %s" % e)
+            print('Will Copy %s to bucket %s' % (source_snap, target_bucket))
+        except botocore.exceptions.ClientError as e:
+            raise Exception("Could not issue copy command: %s" % e)
