@@ -291,10 +291,10 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
 }
 
 resource "aws_sns_topic_subscription" "lambda_subscription" {
-  count         = var.enable ? 1 : 0
-  topic_arn     = var.redis_sns_topic_arn
-  protocol      = "lambda"
-  endpoint      = aws_lambda_function.redis_copy_snapshot[0].arn
+  count     = var.enable ? 1 : 0
+  topic_arn = var.redis_sns_topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.redis_copy_snapshot[0].arn
 }
 
 resource "aws_lambda_permission" "sns_topic_copy_snapshot" {
