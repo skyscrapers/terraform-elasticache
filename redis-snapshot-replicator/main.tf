@@ -1,5 +1,5 @@
 provider "aws" {
-  alias               = "replica"
+  alias = "replica"
 }
 
 resource "aws_iam_role" "replication_role" {
@@ -204,6 +204,15 @@ resource "aws_iam_role_policy_attachment" "attach_redis_lambda_copy_policy_to_ro
   policy_arn = aws_iam_policy.redis_lambda_copy[0].arn
 }
 
+
+
+resource "aws_iam_rule_policy_attachment" "lambda_exec_role" {
+  count      = var.enable ? 1 : 0
+  role       = aws_iam_role.iam_for_lambda_redis[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+
 resource "aws_iam_policy" "redis_lambda_remove" {
   count = var.enable ? 1 : 0
   name  = "${var.name}-lambda-remove-${var.environment}"
@@ -275,18 +284,16 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
 
   environment {
     variables = {
-      DB_INSTANCES  = join(",", var.db_instances)
       TARGET_BUCKET = aws_s3_bucket.bucket[0].id
     }
   }
 }
 
 resource "aws_sns_topic_subscription" "lambda_subscription" {
-  count         = var.enable ? 1 : 0
-  topic_arn     = var.redis_sns_topic_arn
-  protocol      = "lambda"
-  endpoint      = aws_lambda_function.redis_copy_snapshot[0].arn
-  filter_policy = jsonencode(map("Message", map("prefix", "Snapshot succeeded")))
+  count     = var.enable ? 1 : 0
+  topic_arn = var.redis_sns_topic_arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.redis_copy_snapshot[0].arn
 }
 
 resource "aws_lambda_permission" "sns_topic_copy_snapshot" {

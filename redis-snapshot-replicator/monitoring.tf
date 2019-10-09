@@ -35,8 +35,8 @@ resource "aws_cloudwatch_metric_alarm" "lambda_redis_snapshot_create_errors" {
   threshold           = 1
   evaluation_periods  = 1
   period              = local.cw_alarm_custom_period
-  alarm_actions = [var.sns_topic_arn]
-  ok_actions    = [var.sns_topic_arn]
+  alarm_actions       = [var.sns_topic_arn]
+  ok_actions          = [var.sns_topic_arn]
 
   dimensions = {
     FunctionName = aws_lambda_function.redis_create_snapshot[0].function_name
