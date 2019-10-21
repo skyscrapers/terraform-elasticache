@@ -41,5 +41,5 @@ variable "redis_sns_topic_arn" {
 
 variable "backup_retention_days" {
   type    = number
-  default = 30
+  default = 25
 }

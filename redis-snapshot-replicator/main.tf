@@ -206,7 +206,7 @@ resource "aws_iam_role_policy_attachment" "attach_redis_lambda_copy_policy_to_ro
 
 
 
-resource "aws_iam_rule_policy_attachment" "lambda_exec_role" {
+resource "aws_iam_role_policy_attachment" "lambda_exec_role" {
   count      = var.enable ? 1 : 0
   role       = aws_iam_role.iam_for_lambda_redis[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -351,7 +351,7 @@ resource "aws_cloudwatch_event_rule" "invoke_redis_cleanup_lambda" {
 
 resource "aws_cloudwatch_event_target" "invoke_redis_cleanup_lambda" {
   count     = var.enable ? 1 : 0
-  rule      = aws_cloudwatch_event_rule.invoke_redis_snapshot_lambda[0].name
+  rule      = aws_cloudwatch_event_rule.invoke_redis_cleanup_lambda[0].name
   target_id = "${var.name}-snapshot-remove-${var.environment}"
   arn       = aws_lambda_function.redis_remove_snapshot[0].arn
 }
