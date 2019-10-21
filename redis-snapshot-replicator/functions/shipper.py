@@ -12,7 +12,7 @@ def lambda_handler(event, context):
 
     message = event['Records'][0]['Sns']['Message']
 
-    if "Snapshot succeeded" in message
+    if "Snapshot succeeded" in message:
 
         source_snap = ''.join([i for i in message.split('\'') if 'snapshot-' in i])
         
