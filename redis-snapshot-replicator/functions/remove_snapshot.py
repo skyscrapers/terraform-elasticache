@@ -20,10 +20,10 @@ def lambda_handler(event, context):
         for page in page_iterator:
             snapshots.extend(page['Snapshots'])
         for snapshot in snapshots:
-            create_ts = snapshot['SnapshotCreateTime'].replace(tzinfo=None)
+            create_ts = snapshot['NodeSnapshots'][0]['SnapshotCreateTime'].replace(tzinfo=None)
             if create_ts < datetime.datetime.now() - datetime.timedelta(days=int(duration)):        
                 try:
                     response = source.delete_snapshot(SnapshotName=snapshot['SnapshotName'])
-                    print('Will remove %s from the source backups' % (source_snap))
+                    print('Will remove %s from the source backups' % (snapshot['SnapshotName']))
                 except botocore.exceptions.ClientError as e:
                     raise Exception("Could not issue remove command: %s" % e)

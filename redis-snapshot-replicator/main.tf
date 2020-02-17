@@ -109,6 +109,16 @@ resource "aws_s3_bucket" "bucket" {
     enabled = true
   }
 
+  lifecycle_rule {
+    id      = "expire"
+    prefix  = "/"
+    enabled = true
+
+    expiration {
+      days = var.backup_retention_days
+    }
+  }
+
   replication_configuration {
     role = aws_iam_role.replication_role[0].arn
 
@@ -285,6 +295,7 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
   environment {
     variables = {
       TARGET_BUCKET = aws_s3_bucket.bucket[0].id
+      DB_INSTANCES = join(",", var.db_instances)
     }
   }
 }
