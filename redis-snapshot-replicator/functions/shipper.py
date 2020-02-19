@@ -10,10 +10,7 @@ instances = os.environ['DB_INSTANCES']
 print('Loading function')
 
 def byTimestamp(snap):
-    if 'SnapshotCreateTime' in snap:
-        return datetime.datetime.isoformat(snap['SnapshotCreateTime'])
-    else:
-        return datetime.datetime.isoformat(datetime.datetime.now())
+    return datetime.datetime.isoformat(snap['NodeSnapshots'][0]['SnapshotCreateTime'])
 
 def lambda_handler(event, context): 
 
@@ -35,4 +32,4 @@ def lambda_handler(event, context):
             response = source.copy_snapshot(SourceSnapshotName=source_snap,TargetSnapshotName=source_snap,TargetBucket=target_bucket)
             print('Will Copy %s to bucket %s' % (source_snap, target_bucket))
         except botocore.exceptions.ClientError as e:
-            raise Exception("Could not issue copy command: %s" % e)
+            raise Exception("Could not issue copy command: %s" % e)            
