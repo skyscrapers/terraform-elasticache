@@ -1,5 +1,5 @@
 # terraform-elasticache
-Terraform modules to set up redis and memcache(TODO).
+Terraform modules to set up redis and memcache.
 
 ## redis
 This creates a redis cluster with some default values and creates a security group for the cluster that allows a specific security group to access the redis cluster
