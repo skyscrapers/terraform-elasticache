@@ -23,10 +23,9 @@ variable "num_cache_nodes" {
   type        = number
 }
 
-variable "multi_az" {
-  description = "(Optional) Whether to enable multiple availability zones. Applicable only when number of cache nodes is greater than 1"
-  default     = false
-  type        = bool
+variable "vpc_id" {
+  description = "The vpc where we will put the memcache cluster"
+  type        = string
 }
 
 variable "subnets" {
@@ -37,11 +36,6 @@ variable "subnets" {
 variable "allowed_sgs" {
   description = "The security group that can access the memcache cluster"
   type        = list(string)
-}
-
-variable "vpc_id" {
-  description = "The vpc where we will put the memcache cluster"
-  type        = string
 }
 
 variable "parameter_group_name" {
@@ -61,8 +55,4 @@ variable "port" {
   default     = 11211
   type        = number
 }
-
-
-
-
 
