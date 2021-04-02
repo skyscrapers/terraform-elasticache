@@ -61,6 +61,12 @@ variable "automatic_failover_enabled" {
   type    = bool
 }
 
+variable "multi_az_enabled" {
+  default = false
+  type    = bool
+}
+
+
 variable "availability_zones" {
   description = "the list of AZs where you want your cluster to be deployed in"
   type        = list(string)

@@ -19,6 +19,7 @@ This creates a redis cluster with some default values and creates a security gro
 | at_rest_encryption_enabled | (Optional) Whether to enable encryption at rest | `bool` | `true` | no |
 | auth_token | (Optional) The password used to access a password protected server. Can be specified only if `transit_encryption_enabled = true` | `string` | `null` | no |
 | automatic_failover_enabled | n/a | `bool` | `false` | no |
+| multi_az_enabled | n/a | `bool` | `false` | no |
 | engine_version | The redis engine version | `string` | `"3.2.6"` | no |
 | notification_topic_arn | (Optional) ARN of an SNS topic to send ElastiCache notifications | `string` | `null` | no |
 | parameter_group_name | The parameter group name | `string` | `"default.redis3.2"` | no |

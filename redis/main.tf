@@ -14,6 +14,7 @@ resource "aws_elasticache_replication_group" "redis" {
   snapshot_window               = var.snapshot_window
   snapshot_retention_limit      = var.snapshot_retention_limit
   snapshot_arns                 = var.snapshot_arns
+  multi_az_enabled              = var.multi_az_enabled
   at_rest_encryption_enabled    = var.at_rest_encryption_enabled
   transit_encryption_enabled    = var.transit_encryption_enabled
   auth_token                    = var.auth_token
