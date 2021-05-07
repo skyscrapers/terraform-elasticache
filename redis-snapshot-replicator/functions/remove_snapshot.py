@@ -24,6 +24,6 @@ def lambda_handler(event, context):
             if create_ts < datetime.datetime.now() - datetime.timedelta(days=int(duration)):        
                 try:
                     response = source.delete_snapshot(SnapshotName=snapshot['SnapshotName'])
-                    print('Will remove %s from the source backups' % (snapshot['SnapshotName']))
+                    print(('Removing %s from the source backups' % (snapshot['SnapshotName'])))
                 except botocore.exceptions.ClientError as e:
                     raise Exception("Could not issue remove command: %s" % e)
