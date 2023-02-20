@@ -1,3 +1,7 @@
+locals {
+  log_delivery_configuration = var.cloudwatch_logging_enabled ? ["slow-log", "engine-log"] : []
+}
+
 resource "aws_elasticache_replication_group" "redis" {
   replication_group_id          = "${var.project}-${var.environment}-${var.name}"
   replication_group_description = "Redis cluster for ${var.project}-${var.environment}-${var.name}"
@@ -18,7 +22,18 @@ resource "aws_elasticache_replication_group" "redis" {
   at_rest_encryption_enabled    = var.at_rest_encryption_enabled
   transit_encryption_enabled    = var.transit_encryption_enabled
   auth_token                    = var.auth_token
-  notification_topic_arn        = var.notification_topic_arn 
+  notification_topic_arn        = var.notification_topic_arn
+
+  dynamic "log_delivery_configuration" {
+    for_each = local.log_delivery_configuration
+
+    content {
+      destination      = aws_cloudwatch_log_group.redis[0].name
+      destination_type = "cloudwatch-logs"
+      log_format       = "text"
+      log_type         = log_delivery_configuration.value
+    }
+  }
 
   tags = {
     Name        = "${var.project}-${var.environment}-${var.name}"
@@ -33,3 +48,9 @@ resource "aws_elasticache_subnet_group" "elasticache" {
   subnet_ids  = var.subnets
 }
 
+resource "aws_cloudwatch_log_group" "redis" {
+  count = var.cloudwatch_logging_enabled ? 1 : 0
+
+  name              = "redis"
+  retention_in_days = var.cloudwatch_logging_retention_in_days
+}
