@@ -108,9 +108,20 @@ variable "auth_token" {
   type        = string
 }
 
-
 variable "notification_topic_arn" {
   description = "(Optional) ARN of an SNS topic to send ElastiCache notifications"
   default     = null
   type        = string
+}
+
+variable "cloudwatch_logging_enabled" {
+  description = "(Optional) Whether to enable cloudwatch logging"
+  default     = false
+  type        = bool
+}
+
+variable "cloudwatch_logging_retention_in_days" {
+  description = "Retention period for the logs in CloudWatch. Default is 7d."
+  default     = 7
+  type        = number
 }
