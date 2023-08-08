@@ -18,7 +18,7 @@ resource "aws_elasticache_cluster" "memcache" {
 }
 
 resource "aws_elasticache_subnet_group" "elasticache" {
-  name        = "${var.project}-${var.environment}-memcache"
-  subnet_ids  = var.subnets
+  name       = "${var.project}-${var.environment}-memcache"
+  subnet_ids = var.subnets
 }
 
