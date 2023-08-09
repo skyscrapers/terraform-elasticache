@@ -295,7 +295,7 @@ resource "aws_lambda_function" "redis_copy_snapshot" {
   environment {
     variables = {
       TARGET_BUCKET = aws_s3_bucket.bucket[0].id
-      DB_INSTANCES = join(",", var.db_instances)
+      DB_INSTANCES  = join(",", var.db_instances)
     }
   }
 }
