@@ -108,6 +108,12 @@ variable "auth_token" {
   type        = string
 }
 
+variable "auth_token_update_strategy" {
+  description = "(Optional) Strategy to use when updating the auth_token. Valid values are SET, ROTATE, and DELETE. Required if auth_token is set."
+  default     = "ROTATE"
+  type        = string
+}
+
 variable "notification_topic_arn" {
   description = "(Optional) ARN of an SNS topic to send ElastiCache notifications"
   default     = null
@@ -124,4 +130,10 @@ variable "cloudwatch_logging_retention_in_days" {
   description = "Retention period for the logs in CloudWatch. Default is 7d."
   default     = 7
   type        = number
+}
+
+variable "apply_immediately" {
+  description = "(Optional) Whether to apply changes immediately or during the next maintenance window"
+  default     = true
+  type        = bool
 }

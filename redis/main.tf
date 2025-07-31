@@ -22,7 +22,9 @@ resource "aws_elasticache_replication_group" "redis" {
   at_rest_encryption_enabled  = var.at_rest_encryption_enabled
   transit_encryption_enabled  = var.transit_encryption_enabled
   auth_token                  = var.auth_token
+  auth_token_update_strategy  = var.auth_token != null ? var.auth_token_update_strategy : null
   notification_topic_arn      = var.notification_topic_arn
+  apply_immediately           = var.apply_immediately
 
   dynamic "log_delivery_configuration" {
     for_each = local.log_delivery_configuration
